@@ -1,0 +1,13 @@
+backend/node_modules
+frontend/node_modules
+curls.txt
+create_price.js
+
+backend/.env
+frontend/.env
+backend/dist
+frontend/dist
+backend/logs
+frontend/logs
+backend/tmp
+
