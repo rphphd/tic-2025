@@ -22,13 +22,24 @@ const __filename = new URL(import.meta.url).pathname;
 // Get __dirname equivalent
 const __dirname = path.dirname(__filename);
 
-app.use(cors({ origin: process.env.CORS_ORIGIN }));
-
 // Middleware to Log Incoming Requests
 app.use((req, res, next) => {
     console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
     next();
 });
+
+const allowedOrigins = [process.env.CORS_ORIGIN, 'http://localhost:5173'];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
+}));
+
 
 // Middleware
 app.use(express.json());
@@ -36,17 +47,18 @@ app.use(express.json());
 // Connect to MongoDB
 connectDB();
 
-// Serve the static files from the React app
-app.use(express.static(path.join(__dirname, 'public')));
-
 // Routes
 app.use (express.json({ type: 'application/json' }));
-app.use('/', indexRouter);
+
 app.use('/users', usersRouter);
 app.use('/testAPI', testAPIRouter);
 app.use('/testDB', testDBRouter);
 app.use('/topics/:model', topicsRouter);
 app.use('/topics', topicsRouter);
+app.use('/', indexRouter);
+
+// Serve the static files from the React app
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Start server
 app.listen(PORT, () => {
