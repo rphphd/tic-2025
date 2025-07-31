@@ -13,7 +13,7 @@ const modelName = 'technologies';
 const uniqueId = 'id';
 const model = new mongoose.model(modelName, schema);
 
-export{
+export {
     schema,
     model,
     modelName,

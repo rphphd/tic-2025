@@ -2,22 +2,22 @@
 import express from "express";
 import { getCount, getFromLimit, getIn, insertMany, updateMany, deleteOne } from "../data/data-interface.js";
 
-import { model as technologiesModel } from "../models/technologies.js";
-import { model as descriptionsModel } from "../models/descriptions.js";
-import { model as linksModel } from "../models/links.js";
+import * as technologiesData from "../models/technologies.js";
+import * as descriptionsData from "../models/descriptions.js";
+import * as linksData from "../models/links.js";
 
 const models = [
-    technologiesModel,
-    descriptionsModel,
-    linksModel
+    technologiesData,
+    descriptionsData,
+    linksData
 ];
 
 const router = express.Router();
 
 router.get('/', function(req, res) {
     Promise.all([
-        getCount(technologiesModel.model),
-        getFromLimit(technologiesModel.model, {}, req.query.start, req.query.limit)
+        getCount(technologiesData.model),
+        getFromLimit(technologiesData.model, {}, req.query.start, req.query.limit)
     ]).then( ([ count, technologies ]) => {
         const techIds = technologies.map( t => t.id ).reduce( (list, t) => {
             if (t) {
@@ -27,8 +27,8 @@ router.get('/', function(req, res) {
         }, [])
         if (techIds && techIds.length > 0 && techIds[0]) {
             Promise.all([
-                getIn(models[1].model, models[1].uniqueId, techIds),
-                getIn(models[2].model, models[2].uniqueId, techIds)
+                getIn(descriptionsData.model, descriptionsData.uniqueId, techIds),
+                getIn(linksData.model, linksData.uniqueId, techIds)
             ]).then( ([descriptions, links]) => {
                 res.send({
                     'count': count,
@@ -50,8 +50,10 @@ router.get('/', function(req, res) {
 
 router.put('/:model', function(req, res) {
     const modelReceived = models.find( m => m.modelName === req.params.model )
+    console.log(`PUT for model ${req.params.model}, modelReceived`, modelReceived)
     if (modelReceived) {
         const idsInDocs = req.body.docs.map(d => d[modelReceived.uniqueId])
+        console.log(`PUT for model ${req.params.model}, idsInDocs`, idsInDocs)
         if (idsInDocs && idsInDocs.length > 0 && idsInDocs[0] ) {
             const newDocs = []
             const updateDocs = []
